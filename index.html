@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐋</text></svg>">
+<title>Dashboard de Licenciados</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">📊</div>
+      <span>LicDash</span>
+    </div>
+
+    <p class="nav-label">Menu</p>
+
+    <a class="nav-item active" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Dashboard</span>
+    </a>
+
+    <a class="nav-item" href="#" onclick="document.getElementById('section-table').scrollIntoView({behavior:'smooth'});return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+      <span>Licenciados</span>
+    </a>
+
+    <div class="sidebar-footer">
+      <p class="nav-label" style="margin-bottom:8px;">Planilha</p>
+      <label for="file-input">
+        <div class="nav-item" style="cursor:pointer;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Carregar</span>
+        </div>
+      </label>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">Dashboard de Licenciados</div>
+          <div class="topbar-sub" id="topbar-sub">Carregue uma planilha para começar</div>
+        </div>
+      </div>
+      <label for="file-input">
+        <div class="upload-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span id="upload-label">Carregar planilha</span>
+        </div>
+      </label>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
+    </div>
+
+    <div class="content">
+
+      <!-- UPLOAD AREA -->
+      <div id="upload-area">
+        <label for="file-input">
+          <div class="upload-area">
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h2>Arraste sua planilha aqui</h2>
+            <p>ou clique para selecionar o arquivo</p>
+            <span>Suporte para .xlsx e .xls — Aba "Relatório" e "Total de Clientes por Licenciados"</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- DASHBOARD CONTENT -->
+      <div id="dashboard">
+
+        <!-- KPIs -->
+        <div class="metrics" id="metrics-row"></div>
+
+        <!-- CHARTS GRID: barras (2 cols) | rosca (1 col) -->
+        <div class="main-grid">
+
+          <!-- COLUNA ESQUERDA (2/3): gráfico de barras -->
+          <div class="chart-card col-bar" style="display:flex;flex-direction:column;">
+            <div class="card-header">
+              <span class="card-title">Top Licenciados</span>
+              <span class="card-badge" id="badge-top">–</span>
+            </div>
+            <div class="chart-wrap" id="wrap-top" style="flex:1;min-height:0;">
+              <canvas id="chart-top" role="img" aria-label="Ranking de licenciados por número de clientes"></canvas>
+            </div>
+          </div>
+
+          <!-- COLUNA DIREITA (1/3): rosca -->
+          <div class="chart-card" style="display:flex;flex-direction:column;">
+            <div class="card-header">
+              <span class="card-title">Tipo de Licença</span>
+            </div>
+            <div class="legend" id="legend-tipo"></div>
+            <div class="chart-wrap" style="flex:1;min-height:0;">
+              <canvas id="chart-tipo" role="img" aria-label="Distribuição por tipo de licença"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- EVOLUÇÃO (largura total) -->
+        <div class="chart-card" style="margin-bottom:1.5rem;">
+          <div class="card-header">
+            <span class="card-title">Evolução de Cadastros</span>
+            <span class="card-badge" id="badge-time">por mês</span>
+          </div>
+          <div class="chart-wrap" style="height:200px;">
+            <canvas id="chart-time" role="img" aria-label="Evolução de cadastros ao longo do tempo"></canvas>
+          </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-card" id="section-table">
+          <div class="table-header">
+            <span class="table-title">Licenciados Cadastrados</span>
+            <div class="filters">
+              <input type="text" id="search-input" placeholder="🔍  Buscar ID, nome ou tipo…">
+              <select id="filter-licenciado"><option value="">Todos os tipos</option></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID Licenciado</th>
+                  <th>Nome</th>
+                  <th>Tipo de Licença</th>
+                  <th id="th-qtd" style="cursor:pointer;user-select:none;">Qtd. Clientes <span id="sort-arrow">↕</span></th>
+                  <th>Data Ativo</th>
+                </tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span id="pagination-info"></span>
+            <div class="pagination-btns">
+              <button class="pg-btn" id="btn-prev" onclick="changePage(-1)">← Anterior</button>
+              <button class="pg-btn" id="btn-next" onclick="changePage(1)">Próximo →</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /dashboard -->
+    </div><!-- /content -->
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
